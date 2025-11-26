@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Arboles.h" />
     <ClInclude Include="Base\Animation.h" />
     <ClInclude Include="Base\Animator.h" />
     <ClInclude Include="Base\Billboard.h" />
@@ -160,10 +161,16 @@
     <ClInclude Include="Billboard2D.h" />
     <ClInclude Include="Billboard2DAnimation.h" />
     <ClInclude Include="CollitionBox.h" />
+    <ClInclude Include="Houses.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="Jugador.h" />
     <ClInclude Include="KDTree\CollitionDetection.h" />
+    <ClInclude Include="Objeto.h" />
     <ClInclude Include="RainSystem.h" />
+    <ClInclude Include="Soldado.h" />
     <ClInclude Include="Texto.h" />
     <ClInclude Include="Water.h" />
+    <ClInclude Include="Wendigo.h" />
     <ClInclude Include="WinAPIHeaders\DemoTemplateOGL.h" />
     <ClInclude Include="WinAPIHeaders\framework.h" />
     <ClInclude Include="InputDevices\GamePadRR.h" />

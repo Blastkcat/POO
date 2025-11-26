@@ -68,6 +68,8 @@ Camera* Camera::cameraInstance = NULL;
 // Objecto de escena y render
 Scene *OGLobj;
 
+bool hitboxpro = false;
+
 #ifdef _WIN32 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -111,17 +113,53 @@ int main(int argc, char** argv){
 int startGameEngine(void *ptrMsg){
     // Main character with it's camera
     glm::vec3 translate, scale, v(0, 0, -1);
-    translate = glm::vec3(5.0f, 10.0f, -5.0f);
+    translate = glm::vec3(5.0f, 10.0f, 2.0f);
     //5, ye - 1,-5
     //MainModel *model = new MainModel(hWnd, "models/Cube.obj", translate);
     Camera* camera = Camera::getInstance();
-    Model* model = new Model("models/BaseSpiderman/BaseSpiderman.obj", translate, camera);
+    camera->setFirstPerson(false);
+    //soldier_run para el de correr
+    Model* model = new Model("models/Soldado/soldier_run.fbx", translate, camera);
     model->setTranslate(&translate);
     camera->setFront(v);
-    camera->setCharacterHeight(4.0);
-    scale = glm::vec3(1.0f, 1.0f, 1.0f);	// it's a bit too big for our scene, so scale it down
+    camera->setCharacterHeight(4.2);
+    scale = glm::vec3(0.028f, 0.028f, 0.028f);	// it's a bit too big for our scene, so scale it down
     model->setScale(&scale);
+
+    if (model->getModelAttributes()->size() > 0) {
+        Model* hitbox = (Model*)model->getModelAttributes()->at(0).hitbox;
+        if (hitbox != NULL) {
+            // La hacemos 50% más grande que el modelo (1.5 veces su escala)
+            // Si la quieres aún más grande, cambia 1.5f por 2.0f
+            glm::vec3 hbScale = scale * 50.0f;
+            hitbox->setScale(&hbScale);
+        }
+    }
+
+   
     model->setTranslate(&translate);
+    try {
+        std::vector<Animation> animWalk = Animation::loadAllAnimations("models/Soldado/soldier_run.fbx", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
+        if (animWalk.size() > 0) {
+            model->setAnimator(Animator(animWalk[0])); // indice 0 sera Caminar
+        }
+
+        std::vector<Animation> animAttack = Animation::loadAllAnimations("models/Soldado/soldier_idle.fbx", model->GetBoneInfoMap(), model->getBonesInfo(), model->GetBoneCount());
+        if (animAttack.size() > 0) {
+            model->setAnimator(Animator(animAttack[0])); // indice 1 sera Atacar
+        }
+
+        
+
+        //atacar
+        
+
+        model->setAnimation(0);
+    }
+    catch (...) {
+        ERRORL("Could not load animation!", "ANIMACION");
+    }
+
     Texto *fps = NULL;
     Texto *coordenadas = NULL;
     try{
@@ -213,6 +251,8 @@ bool checkInput(GameActions *actions, Scene* scene) {
 //        pos.y = *actions->jump > 0 ? pos.y : scene->getTerreno()->Superficie(pos.x, pos.z);
 
         OGLobj->setNextTranslate(&pos);
+        OGLobj->setAnimation(0); // caminar
+        changeAnimation = true;
     }
     if (actions->advance != 0) {
         glm::vec3 pos = *OGLobj->getTranslate();
@@ -221,6 +261,8 @@ bool checkInput(GameActions *actions, Scene* scene) {
         // Posicionamos la camara/modelo pixeles arriba de su posicion en el terreno
 //        pos.y = *actions->jump > 0 ? pos.y : scene->getTerreno()->Superficie(pos.x, pos.z);
         OGLobj->setNextTranslate(&pos);
+        OGLobj->setAnimation(0); // caminar
+        changeAnimation = true;
     }
     if (*actions->jump > 0){
         glm::vec3 pos = *OGLobj->getNextTranslate();
@@ -243,6 +285,9 @@ bool checkInput(GameActions *actions, Scene* scene) {
     }
     if (actions->getPlayerZoom() != NULL) {
         OGLobj->cameraDetails->calculateZoomPlayer(*actions->getPlayerZoom() * (6 * gameTime.deltaTime / 100));
+    }
+    if (!changeAnimation) {
+        OGLobj->setAnimation(1); // idle
     }
 
     return true; // siempre buscar colision

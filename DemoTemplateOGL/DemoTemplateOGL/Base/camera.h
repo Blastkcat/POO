@@ -78,14 +78,14 @@ private:
         Pitch = pitch;
         updateCameraVectors();
     }
-//    Camera(){}
+    //    Camera(){}
 public:
     static Camera* getInstance() {
         if (!cameraInstance) {
             cameraInstance = new Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), YAW, PITCH);
         }
         return cameraInstance;
-    }    
+    }
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     void GetViewMatrix(glm::mat4& viewMatrix) {
         viewMatrix = glm::mat4(1.0f); // constructs an identity matrix
@@ -95,21 +95,35 @@ public:
         //glm::lookAt(Position, Position + Front, Up);
     }
 
-    void calculateCameraPosition(float pRotY, glm::vec3 *pTrans, float dHorizontal, float dVertical) {
-        if (firstPerson) {
-            float theta = pRotY + Camera::angleAroundPlayer; //Model::getRotationAngle() +
+    void calculateCameraPosition(float pRotY, glm::vec3* pTrans, float dHorizontal, float dVertical) {
+        if (firstPerson) { // Lógica de Tercera Persona (Orbital)
+            float theta = pRotY + Camera::angleAroundPlayer;
             float offsetX = dHorizontal * glm::sin(glm::radians(theta));
             float offsetZ = dHorizontal * glm::cos(glm::radians(theta));
             getPosition().x = pTrans->x - offsetX;
             getPosition().z = pTrans->z - offsetZ;
             getPosition().y = pTrans->y + dVertical;
-        } else {
-            setPosition(*pTrans);
-            getPosition().y += characterHeight;
+        }
+        else { // Lógica de Primera Persona
+            // 1. Tomamos la posición del jugador
+            glm::vec3 pos = *pTrans;
+            // 2. Sumamos la altura (ojos)
+            pos.y += characterHeight;
+
+            // 3. NUEVO: Empujamos la cámara hacia adelante para salir de la cabeza
+            // El ángulo pRotY indica hacia dónde mira el modelo.
+            // Restamos el seno/coseno porque en el sistema de coordenadas, esto nos mueve "hacia el frente".
+            float forwardOffset = -2.5f; // Ajusta este valor: Más alto = más adelante (fuera del modelo)
+
+            float theta = glm::radians(pRotY);
+            pos.x -= forwardOffset * sin(theta);
+            pos.z -= forwardOffset * cos(theta);
+
+            setPosition(pos);
         }
     }
 
-    glm::mat4 CamaraUpdate(float pRotY, glm::vec3 *pTrans) {
+    glm::mat4 CamaraUpdate(float pRotY, glm::vec3* pTrans) {
         calculateCameraPosition(pRotY, pTrans, calculateHorizontalDistance(), calculateVerticalDistance());
         setYaw(180 - pRotY - angleAroundPlayer);
         // Obtenemos la proyeccion en base a la ventana
@@ -143,21 +157,21 @@ public:
         Position = avance;
     }
     void CamaraAvanza() {
-//        setPosition(nextPosition);
-        /*gluLookAt(posc.X, posc.Y, posc.Z,
-            posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
-            0, 1, 0);*/
+        //        setPosition(nextPosition);
+                /*gluLookAt(posc.X, posc.Y, posc.Z,
+                    posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
+                    0, 1, 0);*/
         glm::vec3 tmp(Front.x, 0, Front.z);
         glm::lookAt(Position, Position + tmp, Up);
     }
     void CamaraAvanza(float vel) {
         glm::vec3 newPos;
-        movePosition(newPos, vel);        
+        movePosition(newPos, vel);
         setPosition(newPos);
         /*gluLookAt(posc.X, posc.Y, posc.Z,
             posc.X + dirc.X, posc.Y, posc.Z + dirc.Z,
             0, 1, 0);*/
-        glm::vec3 tmp(Front.x,0,Front.z);
+        glm::vec3 tmp(Front.x, 0, Front.z);
         glm::lookAt(Position, Position + tmp, Up);
     }
 
@@ -171,7 +185,7 @@ public:
     }
 
     //esto es de Graficas Computacionales no ocupan aprenderselo para la revision
-    glm::vec3 Transforma(glm::vec3 &v, float grados2, int eje = 0)
+    glm::vec3 Transforma(glm::vec3& v, float grados2, int eje = 0)
     {
         float Matriz[4][4];
         double grados = grados2 * 3.141516 / 180.0;
@@ -254,34 +268,34 @@ public:
         this->Position = Position;
         //        cameraDetails.Position = &this->Position;
     }
-    glm::vec3 &getFront() { return Front; };
-    void setFront(glm::vec3 &Front) { 
-        this->Front = Front; 
-//        cameraDetails.Front = &this->Front;
+    glm::vec3& getFront() { return Front; };
+    void setFront(glm::vec3& Front) {
+        this->Front = Front;
+        //        cameraDetails.Front = &this->Front;
     }
-    glm::vec3 &getUp() { return Up; };
-    void setUp(glm::vec3 &Up) { 
-        this->Up = Up; 
-//        cameraDetails.Up = &this->Up;
+    glm::vec3& getUp() { return Up; };
+    void setUp(glm::vec3& Up) {
+        this->Up = Up;
+        //        cameraDetails.Up = &this->Up;
     }
-    glm::vec3 &getRight() { return Right; };
-    void setRight(glm::vec3 &Right) { 
-        this->Right = Right; 
-//        cameraDetails.Right = &this->Right; 
+    glm::vec3& getRight() { return Right; };
+    void setRight(glm::vec3& Right) {
+        this->Right = Right;
+        //        cameraDetails.Right = &this->Right; 
     }
-    glm::vec3 &getWorldUp() { return WorldUp; };
-    void setWorldUp(glm::vec3 &WorldUp) { 
-        this->WorldUp = WorldUp; 
-//        cameraDetails.WorldUp = &this->WorldUp; 
+    glm::vec3& getWorldUp() { return WorldUp; };
+    void setWorldUp(glm::vec3& WorldUp) {
+        this->WorldUp = WorldUp;
+        //        cameraDetails.WorldUp = &this->WorldUp; 
     }
     // euler Angles
     float getYaw() { return Yaw; };
-    void setYaw(float Yaw) { 
+    void setYaw(float Yaw) {
         this->Yaw = Yaw;
-//        cameraDetails.Yaw = &this->Yaw; 
+        //        cameraDetails.Yaw = &this->Yaw; 
     }
     float getPitch() { return Pitch; };
-    void setPitch(float Pitch) { 
+    void setPitch(float Pitch) {
         if (Pitch > 89.0f)
             Pitch = 89.0f;
         else if (Pitch < -89.0f)
@@ -292,13 +306,15 @@ public:
     float getCharacterHeight() { return characterHeight; }
     void setCharacterHeight(float characterHeight) { this->characterHeight = characterHeight; }
     float getMovementSpeed() { return MovementSpeed; };
-    void setMovementSpeed(float MovementSpeed) { this->MovementSpeed = MovementSpeed; //cameraDetails.MovementSpeed = &this->MovementSpeed; 
+    void setMovementSpeed(float MovementSpeed) {
+        this->MovementSpeed = MovementSpeed; //cameraDetails.MovementSpeed = &this->MovementSpeed; 
     }
     float getMouseSensitivity() { return MouseSensitivity; };
-    void setMouseSensitivity(float MouseSensitivity) { this->MouseSensitivity = MouseSensitivity; //cameraDetails.MouseSensitivity = &this->MouseSensitivity; 
+    void setMouseSensitivity(float MouseSensitivity) {
+        this->MouseSensitivity = MouseSensitivity; //cameraDetails.MouseSensitivity = &this->MouseSensitivity; 
     };
     float getZoom() { return Zoom; };
-    void setZoom(float Zoom) { 
+    void setZoom(float Zoom) {
         if (Zoom < 1.0f)
             Zoom = 1.0f;
         else if (Zoom > 45.0f)

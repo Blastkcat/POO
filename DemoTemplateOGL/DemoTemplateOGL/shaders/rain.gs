@@ -16,7 +16,7 @@ void main() {
     vec3 pos = gs_in[0].pos;
 
     // small quad around pos
-    float size = 0.1;
+    float size = 0.05;
 
     // Direccion desde la camara hacia la particula
     vec3 forward = normalize(pos - cameraPos);

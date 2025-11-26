@@ -129,6 +129,30 @@
     <ClInclude Include="Billboard2DAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RainSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Jugador.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wendigo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Soldado.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Objeto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Arboles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Houses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DemoTemplateOGL.cpp">

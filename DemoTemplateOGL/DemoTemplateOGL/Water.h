@@ -10,6 +10,7 @@
 #include "Base/glext.h"
 #include "Base/wglext.h"
 #include "Terreno.h"
+#include "Base/camera.h"
 
 class Water : public Terreno {
 
@@ -76,11 +77,20 @@ public:
 	}
 
 	virtual void Draw(Shader& shader) {
-//		reloadData(meshes[0]->vertices);
+		//		reloadData(meshes[0]->vertices);
 		static float time = 0.f;
 		time += waveSpeed;
 		shader.setFloat("time", time);
-		Model::Draw(shader,0);
+
+		// --- CORRECCIÓN AQUÍ ---
+		// Usamos 'cameraDetails' en lugar de 'camera'
+		if (cameraDetails != NULL) {
+			shader.setMat4("view", cameraDetails->getView());        // O getViewMatrix() según tu clase Camera
+			shader.setMat4("projection", cameraDetails->getProjection()); // O getProjectionMatrix()
+		}
+		// -----------------------
+
+		Model::Draw(shader, 0);
 	}
 
 };

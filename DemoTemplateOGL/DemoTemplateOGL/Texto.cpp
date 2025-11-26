@@ -74,7 +74,7 @@ void Texto::initTexto(){
 
 		float margin = 0.00002; // This value prevents the minor overlap with the next char when rendering
 //		rotated_pt = rotate_pt(loc, glm::vec2(xpos, ypos + h), rotacion);
-		glm::vec3 pos = glm::vec3(xpos, ypos, 0);
+		glm::vec3 pos = glm::vec3(xpos, ypos, this->z);
 		letra.textures_loaded[0]->id = fontTexture.textureID;
 		letra.setTranslate(&pos);
 		letra.setActive(true);
@@ -122,7 +122,7 @@ void Texto::Draw(Shader &shader){
 void Texto::prepShader(Shader& shader, glm::vec3 &pos){
 //	glm::mat4 projection = cameraDetails->cameraDetails->getProjection();
     glm::mat4 projection = glm::ortho(0.0f, (SCR_WIDTH+0.0f), (SCR_HEIGHT+0.0f), 0.0f, -1.0f, 1.0f);
-	glm::mat4 view = cameraDetails->cameraDetails->getView();
+	glm::mat4 view = 0.01f;
 
 	glm::mat4 model = glm::mat4(1.0f);
 //	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene

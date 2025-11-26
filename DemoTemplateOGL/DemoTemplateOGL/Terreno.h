@@ -4,6 +4,8 @@
 
 class Terreno : public Model {
 
+public:
+	
 private:
 	struct Plano {
 		float A, B, C, D;
@@ -139,37 +141,41 @@ public:
 
 
 	virtual void prepShader(Shader& shader) {
-		glm::vec3 lightColor;
-		lightColor.x = sin(7200 * 2.0f);
-		lightColor.y = sin(7200 * 0.7f);
-		lightColor.z = sin(7200 * 1.3f);
-		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // decrease the influence
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // low influence
-		shader.setVec3("light.ambient", ambientColor);
-		shader.setVec3("light.diffuse", diffuseColor);
-		shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-		
-		shader.setVec3("light.position", lightPos);
-		shader.setVec3("light.direction", cameraDetails->getFront());
+		// --- 1. Configuración de la Luz del Jugador (lightPlayer) ---
+		// Usamos la posición de la cámara como aproximación de la posición del jugador
+		// ya que Terreno.h tiene acceso a cameraDetails.
+		shader.setVec3("lightPlayer.position", cameraDetails->getPosition());
+		shader.setVec3("lightPlayer.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		shader.setVec3("lightPlayer.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+		shader.setVec3("lightPlayer.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		shader.setFloat("lightPlayer.radius", 20.0f);
+
+		// --- 2. Configuración de la Luz de la Fogata (lightFogata) ---
+		// Copiamos los mismos valores que tienes en Scenario.cpp
+		shader.setVec3("lightFogata.position", glm::vec3(0.0f, 15.0f, 25.0f));
+		shader.setVec3("lightFogata.ambient", glm::vec3(0.2f, 0.05f, 0.0f));
+		shader.setVec3("lightFogata.diffuse", glm::vec3(1.0f, 0.6f, 0.0f));
+		shader.setVec3("lightFogata.specular", glm::vec3(1.0f, 0.5f, 0.0f));
+		shader.setFloat("lightFogata.radius", 50.0f);
+
+		// --- 3. Configuración de la Vista ---
 		shader.setVec3("viewPos", cameraDetails->getPosition());
 
-		// view/projection transformations
+		// Transformaciones de vista y proyección
 		shader.setMat4("projection", cameraDetails->getProjection());
 		shader.setMat4("view", cameraDetails->getView());
 
-		// render the loaded model
+		// --- 4. Matriz de Modelo (Transformaciones del Terreno) ---
 		glm::mat4 model = glm::mat4(1.0f);
-		// translate it down so it's at the center of the scene
-//		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); 
-		model = glm::translate(model, *getTranslate()); // translate it down so it's at the center of the scene
-//			model = glm::translate(model, glm::vec3(cameraDetails.Position->x, cameraDetails.Position->y - 5, cameraDetails.Position->z)); // translate it down so it's at the center of the scene
-//			model = glm::scale(model, glm::vec3(0.0025f, 0.0025f, 0.0025f));	// it's a bit too big for our scene, so scale it down
+		model = glm::translate(model, *getTranslate());
+
 		if (this->getRotX() != 0)
 			model = glm::rotate(model, glm::radians(this->getRotX()), glm::vec3(1, 0, 0));
 		if (this->getRotY() != 0)
 			model = glm::rotate(model, glm::radians(this->getRotY()), glm::vec3(0, 1, 0));
 		if (this->getRotZ() != 0)
 			model = glm::rotate(model, glm::radians(this->getRotZ()), glm::vec3(0, 0, 1));
+
 		shader.setMat4("model", model);
 	}
 

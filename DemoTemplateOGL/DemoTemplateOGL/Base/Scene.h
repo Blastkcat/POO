@@ -12,6 +12,8 @@
 
 class Scene {
 	public:
+		bool enemigoTeSigue = false;   // Controla si se mueve
+		glm::vec3 posFogata = glm::vec3(0);
 		virtual float getAngulo() = 0;
 		virtual void setAngulo(float angulo) = 0;
 		virtual Model* getMainModel() = 0;
@@ -32,14 +34,16 @@ class Scene {
             angulo = angulo >= 360 ? angulo - 360.0 : angulo;
             setAngulo(angulo);
             getSky()->setRotY(angulo);
-			// Actualizar ciclo día/noche
-			getSky()->update(gameTime.deltaTime / 1000.0f);
+			
             Model* camara = getMainModel();
 			getTerreno()->lightPos = *camara->getNextTranslate();
+			//glm::vec3 luzActual = (posFogata == glm::vec3(0)) ? *camara->getNextTranslate() : posFogata;
+			//getTerreno()->lightPos = luzActual;
 			for (int i = 0; i < getLoadedModels()->size(); i++){
 				auto it = getLoadedModels()->begin() + i;
 				Model *collider = NULL, *model = *it;
 				model->lightPos = *camara->getNextTranslate();
+				//model->lightPos = luzActual;
 				for (int j = 0; j < model->getModelAttributes()->size(); j++){
 					int idxCollider = -1;
 					bool objInMovement = (*model->getNextTranslate(j)) != (*model->getTranslate(j));
@@ -48,27 +52,25 @@ class Scene {
 					bool isPrincipal = model == camara; // Si es personaje principal, activa gravedad
 					float terrainY = getTerreno()->Superficie(posM.x, posM.z);
 					if (model->name.compare("fogata") == 0 && j == 0) {
-						glm::vec3 positionA = *camara->getNextTranslate(); // extrae la traslación de A
-						glm::vec3 positionB = posM;
-						// Seguimiento al jugador
-						float followSpeed = 1.0f * gameTime.deltaTime / 1000;
-						positionB = glm::mix(positionB, positionA, followSpeed);
-						positionB.y =
-							getTerreno()->Superficie(positionB.x, positionB.z);
-						model->setNextTranslate(&positionB);
+						// CAMBIO 3: Guardamos la posición actual de la fogata para usarla como luz en el siguiente frame
+						this->posFogata = posM;
+
+						// CAMBIO 4: Solo seguir si la variable es verdadera
+						if (this->enemigoTeSigue) {
+							glm::vec3 positionA = *camara->getNextTranslate();
+							glm::vec3 positionB = posM;
+							float followSpeed = 1.0f * gameTime.deltaTime / 1000;
+							positionB = glm::mix(positionB, positionA, followSpeed);
+							positionB.y = getTerreno()->Superficie(positionB.x, positionB.z);
+							model->setNextTranslate(&positionB);
+						}
 					}
 					ModelCollider mcollider = model->update(terrainY, *getLoadedModels(), ejeColision, isPrincipal, j);
 					if (mcollider.model != NULL){
 						collider = (Model*)mcollider.model;
 						idxCollider = mcollider.attrIdx;
 					}
-					if (collider != NULL && model == camara){
-						if (ejeColision.y == 1){
-							INFO("APLASTADO!!!! " + collider->name, "JUMP HITBOX_"+to_string(idxCollider));
-							if (removeCollideModel(collider, idxCollider))
-								i--;
-						}
-					}
+					
 					else if (collider != NULL) {
 						if (model->name.compare("fogata") == 0 && j == 0
 							&& collider == camara) {

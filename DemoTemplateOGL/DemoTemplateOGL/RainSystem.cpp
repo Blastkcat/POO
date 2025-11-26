@@ -79,14 +79,25 @@ void RainDrop::respawn(ModelAttributes& drop, int idx) {
     static std::default_random_engine eng;
     static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
 
-    float x = static_cast<float>(rand() % (int)areaSize) - areaSize / 2;
-    float z = static_cast<float>(rand() % (int)areaSize) - areaSize / 2;
-    float y = static_cast<float>(rand() % (int)height);
+    // 1. OBTENER POSICIÓN DEL JUGADOR/CÁMARA
+    // Usamos cameraDetails (que ya está en tu clase) para centrar la generación en el jugador.
+    glm::vec3 playerPos = cameraDetails->getPosition();
+
+    // 2. GENERAR ALREDEDOR DEL JUGADOR
+    // Sumamos la posición del jugador al cálculo aleatorio
+    float x = playerPos.x + (static_cast<float>(rand() % (int)areaSize) - areaSize / 2);
+    float z = playerPos.z + (static_cast<float>(rand() % (int)areaSize) - areaSize / 2);
+    // La altura se mantiene relativa o fija arriba
+    float y = playerPos.y + 15.0f + static_cast<float>(rand() % 10); // Ajusta 15.0f según qué tan alto quieras que nazcan
 
     drop.translate = glm::vec3(x, y, z);
 
-    // downward velocity with small random wind
-    velocity[idx] = glm::vec3(dist(eng) * 2.0f, 0.75f + static_cast<float>(rand() % 100) / 500.0f * (gameTime.deltaTime / 10000), dist(eng) * 2.0f);
+    // 3. VELOCIDAD MÁS LENTA (EFECTO NIEVE)
+    // Reducimos drásticamente la velocidad en Y (caída) y X/Z (viento suave)
+    // Antes era 0.75f (rápido), ahora probamos con 0.1f o 0.2f
+    float fallSpeed = 0.1f + static_cast<float>(rand() % 100) / 10000.0f;
+
+    velocity[idx] = glm::vec3(dist(eng) * 0.5f, fallSpeed, dist(eng) * 0.5f);
 }
 
 void RainDrop::Draw() {
@@ -140,5 +151,5 @@ void RainSystem::update(Terreno* t) {
 
 void RainSystem::render() {
     drops.Draw();
-    splashes.Draw();
+   
 }
